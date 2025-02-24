@@ -9,7 +9,8 @@ world = gpd.read_file(file_path)
 africa = world[world['CONTINENT'] == 'Africa']
 
 # Prints the first 5 rows of the GeoDataFrame
-print(africa.head())
+# print(africa.head())
+africa
 
 africa.plot(edgecolor='black', color='lightgreen')
 plt.title('Map of African Countries')
