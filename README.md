@@ -1,2 +1,2 @@
 # GEO-DATA-ANALYSIS
-My work in Geo Spatial Data Analysis
+All my exercises involving work with GEO Spatial Data
