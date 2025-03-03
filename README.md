@@ -1,2 +1,2 @@
 # GEO-DATA-ANALYSIS
-All my work involving GEO Spatial Data
+All my work involving Geospatial Data
