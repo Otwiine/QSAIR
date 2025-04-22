@@ -15,7 +15,7 @@ def build_lstm_yield_model(time_steps, features):
     x = Dense(16, activation='relu')(x)
     outputs = Dense(1, activation='linear')(x) # Yield as regression
 
-    model = Model(inputs=, outputs=outputs)
+    model = Model(inputs=inputs, outputs=outputs)
     model.compile(
         optimizer='adam',
         loss='mse',
