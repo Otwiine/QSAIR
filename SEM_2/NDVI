@@ -1,0 +1,29 @@
+import ee # Import the Earth Engine library
+ee.Initialize() # Initialize the Earth Engine API
+
+# Define region of interest
+roi = ee.Geometry.Rectangle([longitude1, latitude1, latitude2, longitude2]) # Order of coordinates might vary depending on exact usage
+
+# Get Sentinel-2 collection with cloud filtering
+filter_img2_collection = (ee.ImageCollection('COPERNICUS/S2_SR')
+                           .filterBounds(roi)
+                           .filterDate('2023-01-01', '2023-12-31')
+                           .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)))
+
+# Function to calculate NDVI
+def addNDVI(image):
+    ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI')
+    return image.addBands(ndvi)
+
+# Map the NDVI function over the collection
+s2_collection_with_ndvi = filter_img2_collection.map(addNDVI)
+
+# Get the median composite of the NDVI band
+median_ndvi = s2_collection_with_ndvi.select('NDVI').median()
+
+# Visualization parameters
+visualization_parameters = {
+    'min': 0,
+    'max': 1,
+    'palette': ['red', 'yellow', 'green']
+}

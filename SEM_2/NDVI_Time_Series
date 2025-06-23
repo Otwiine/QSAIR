@@ -1,0 +1,119 @@
+import ee
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.signal import savgol_filter
+
+ee.Initialize()
+
+# Define agricultural field boundary (replace with your actual boundary if needed)
+# Example coordinates (replace with your specific field boundary coordinates)
+field_boundary = ee.Geometry.Polygon([
+    [[-longitude, latitude],
+     [-longitude, -latitude],
+     [longitude, -latitude],
+     [longitude, latitude],
+     [-longitude, latitude]]
+]) # Ensure these are your specific coordinates for 'field_boundary'
+
+# Define image dates and bands
+# Note: 'YYYY-MM-DD' should be dynamic if not hardcoded.
+# The original code looks like it intends to use specific years.
+start_date_filter = '2018-01-01'
+end_date_filter = '2023-12-31'
+input_bands = ['B8', 'B4'] # Bands for NDVI calculation (NIR, Red)
+output_band = 'NDVI' # Name for the calculated band
+
+# Function to add NDVI band
+def addNDVI(image):
+    ndvi = image.normalizedDifference(input_bands).rename(output_band)
+    return image.addBands(ndvi)
+
+# Filter collection to date range and region
+s2_collection = (ee.ImageCollection('COPERNICUS/S2_SR')
+                 .filterDate(start_date_filter, end_date_filter)
+                 .filterBounds(field_boundary)
+                 .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)))
+
+# Map NDVI function over the collection
+s2_collection_with_ndvi = s2_collection.map(addNDVI)
+
+# Extract NDVI time series for the field
+# This will extract the mean NDVI for the field boundary for each image in the collection.
+# The scale should be appropriate for Sentinel-2, e.g., 10 or 20 meters.
+ndvi_data = s2_collection_with_ndvi.select(output_band).getRegion(field_boundary, 10).getInfo()
+
+# Process into usable format (Pandas DataFrame)
+# The first row of getRegion() output is headers, so skip it.
+ndvi_data_df = pd.DataFrame(ndvi_data[1:], columns=ndvi_data[0])
+
+# Convert 'time' to datetime objects and set as index
+ndvi_data_df['time'] = pd.to_datetime(ndvi_data_df['time'], unit='ms')
+ndvi_data_df.set_index('time', inplace=True)
+
+# Select only the NDVI column
+ndvi_data_df = ndvi_data_df[[output_band]] # Ensure column name matches 'NDVI'
+
+# Add 'year' and 'sort_day' columns for plotting by year
+ndvi_data_df['year'] = ndvi_data_df.index.year
+# 'sort_day' represents the day of the year, useful for plotting yearly profiles
+ndvi_data_df['sort_day'] = ndvi_data_df.index.dayofyear + (ndvi_data_df.index.hour + ndvi_data_df.index.minute/60) / 24 # More precise day of year
+
+# Sort by 'sort_day' for better plotting
+ndvi_data_df.sort_values(by='sort_day', inplace=True)
+
+# Smooth noise using Savitzky-Golay filter (savgol_filter from scipy.signal)
+# window_length: odd integer. The length of the filter window (i.e., the number of coefficients).
+# polyorder: The order of the polynomial used to fit the samples.
+# window_length must be odd and greater than polyorder.
+# You might need to adjust window_length and polyorder based on your data.
+window_length = 31 # Example, adjust as needed
+polyorder = 2    # Example, adjust as needed
+
+# Ensure enough points for smoothing
+if len(ndvi_data_df) >= window_length:
+    ndvi_data_df['NDVI_smooth'] = savgol_filter(ndvi_data_df[output_band], window_length, polyorder)
+else:
+    print(f"Warning: Not enough data points ({len(ndvi_data_df)}) for Savitzky-Golay filter with window_length={window_length}. Skipping smoothing.")
+    ndvi_data_df['NDVI_smooth'] = ndvi_data_df[output_band] # Or handle as per your requirement
+
+# Plotting the time series
+plt.figure(figsize=(12, 6))
+
+# Plot raw NDVI values
+plt.plot(ndvi_data_df.index, ndvi_data_df[output_band], label=f'Raw {output_band} values', alpha=0.5)
+
+# Plot smoothed NDVI values if smoothing was applied
+if 'NDVI_smooth' in ndvi_data_df.columns:
+    plt.plot(ndvi_data_df.index, ndvi_data_df['NDVI_smooth'], label=f'Smoothed {output_band} values', color='red')
+
+plt.xlabel('Date')
+plt.ylabel(f'{output_band} Value')
+plt.title(f'{output_band} Time Series Analysis for Field')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Plot multi-year NDVI profiles (yearly composite view)
+plt.figure(figsize=(12, 6))
+for year, group in ndvi_data_df.groupby('year'):
+    plt.plot(group['sort_day'], group[output_band], label=f'Year {year}', alpha=0.7)
+    # Optionally, plot smoothed lines for yearly profiles as well
+    # plt.plot(group['sort_day'], group['NDVI_smooth'], label=f'Year {year} Smooth', linestyle='--', color=plt.cm.viridis(year - min(ndvi_data_df['year'])))
+
+plt.xlabel('Day of Year')
+plt.ylabel(f'{output_band} Value')
+plt.title(f'Multi-Year {output_band} Profiles')
+plt.legend(title='Year')
+plt.grid(True)
+plt.show()
+
+# Scatter plot of years (optional, as indicated in the original code, but often for raw points)
+plt.figure(figsize=(10, 6))
+plt.scatter(ndvi_data_df['year'], ndvi_data_df[output_band], s=10, alpha=0.6, label=f'Individual {output_band} points')
+plt.xlabel('Year')
+plt.ylabel(f'{output_band} Value')
+plt.title(f'Scatter Plot of {output_band} by Year')
+plt.grid(True)
+plt.legend()
+plt.show()

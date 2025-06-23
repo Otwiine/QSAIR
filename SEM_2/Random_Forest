@@ -1,0 +1,65 @@
+import pandas as pd
+import ee
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
+# Part 1: Data Acquisition and Preprocessing
+# Get Sentinel-2 imagery
+s2_image_collection = (ee.ImageCollection('COPERNICUS/S2_SR')
+                       .filterBounds(region) # Assuming 'region' is defined elsewhere
+                       .filterDate('2021-01-01', '2021-12-31')
+                       .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20)))
+
+# Create composite and calculate indices
+composite = s2_image_collection.median()
+ndvi = composite.normalizedDifference(['B8', 'B4']).rename('NDVI')
+mndwi = composite.normalizedDifference(['B3', 'B11']).rename('MNDWI')
+
+# Combine bands
+input_bands = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12', 'NDVI', 'MNDWI']
+composite_with_bands = composite.addBands([ndvi, mndwi])
+
+# Part 2: Sample points with known crop types
+# Assuming 'ground_truth' is an ee.FeatureCollection with 'path/to/ground_truth_data' and a 'crop_type' property
+samples = ee.FeatureCollection('path/to/ground_truth_data') # Replace with your actual asset path
+
+# Overlay the image data with sample points
+# The 'scale' argument is important for the resolution of the image data to extract
+sampled_data = composite_with_bands.sampleRegions(
+    collection=samples,
+    properties=['crop_type'], # The property in your FeatureCollection that holds the crop type label
+    scale=10 # Example scale, adjust based on your needs (e.g., 10 for Sentinel-2)
+)
+
+# Part 3: Convert to Pandas DataFrame
+def ee_to_pandas(ee_collection):
+    """Converts an Earth Engine FeatureCollection to a Pandas DataFrame."""
+    # Get a list of all features in the collection.
+    feature_list = ee_collection.getInfo()['features']
+    # Extract properties from each feature and convert to a list of dictionaries.
+    data = [feature['properties'] for feature in feature_list]
+    # Create a Pandas DataFrame.
+    return pd.DataFrame(data).drop(columns=['crop_type', 'geometry']) # Drop geometry if not needed
+
+# Assuming you've defined the ee_to_pandas function as above or will include it
+# If the original line `df = pd.DataFrame(samples.getInfo()['features'])` refers to the extracted samples,
+# then `df = pd.DataFrame(sampled_data.getInfo()['features'])` might be more appropriate,
+# but the `ee_to_pandas` function is a more robust way.
+df = pd.DataFrame(sampled_data.getInfo()['features']) # This line assumes direct conversion if data is small
+
+# Prepare data for Scikit-learn
+# Ensure your DataFrame columns match input_bands + 'crop_type'
+X = df[input_bands]
+y = df['crop_type']
+
+# Part 4: Train-Test Split and Model Training
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train Random Forest model
+model = RandomForestClassifier(n_estimators=500, random_state=42)
+model.fit(X_train, y_train)
+
+# Further steps would involve classification and evaluation
+# For example:
+# predictions = model.predict(X_test)
+# print(classification_report(y_test, predictions))
