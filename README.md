@@ -1,6 +1,6 @@
 # QSAIR 
 
-All my coding projects from the **Quantum School of Artificial Intelligence and Robotics (<a href="https://www.quantumschoolofaiandrobotics.com/" target="_blank">QSAIR</a>))**. 
+All my coding projects from the **Quantum School of Artificial Intelligence and Robotics (<a href="https://www.quantumschoolofaiandrobotics.com/" target="_blank">QSAIR</a>)**. 
 
 
 This repository includes work in:  
