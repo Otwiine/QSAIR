@@ -1,6 +1,7 @@
 # QSAIR 
 
-All my coding projects from the **Quantum School of Artificial Intelligence and Robotics (QSAIR)**.  
+All my coding projects from the **Quantum School of Artificial Intelligence and Robotics ([QSAIR](https://www.quantumschoolofaiandrobotics.com/))**. 
+
 
 This repository includes work in:  
 - **Geographical Information Systems (GIS)**  
