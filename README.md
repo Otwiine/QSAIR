@@ -6,9 +6,9 @@ All my coding projects from the **Quantum School of Artificial Intelligence and 
 This repository includes work in:  
 - **Geographical Information Systems (GIS)**  
 - **Artificial Intelligence (AI)**  
-- **Machine Learning (ML)**  
-- **Web Development** (HTML, CSS, JavaScript)  
-- **Programming in Python and Java**
+- **Machine Learning (ML)**
+- **Python and Java programming**
+- **Web Development** (HTML, CSS, JavaScript)
   
 <br>
 
