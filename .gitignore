@@ -9,3 +9,5 @@ out/                    # compiled Java output
 # Python
 __pycache__/            # cache folders
 *.pyc                   # compiled Python files
+.idea/vcs.xml
+.idea/workspace.xml
