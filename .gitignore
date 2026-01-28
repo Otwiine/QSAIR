@@ -5,8 +5,6 @@
 .idea/                  # ignore all IDE metadata and configs
 out/                    # compiled Java output
 *.class                 # compiled Java files
-.idea/vcs.xml           # IntelliJ version control settings (local, machine-specific)
-.idea/workspace.xml     # IntelliJ workspace settings (open files, run configs, breakpoints)
 
 # Python
 __pycache__/            # cache folders
