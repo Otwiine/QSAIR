@@ -6,6 +6,7 @@
 *.iml           # module files
 out/            # compiled output
 *.class         # compiled Java files
+*.xml           # IDE or project configuration files
 
 # Python
 __pycache__/    # cache folders
