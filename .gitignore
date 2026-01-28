@@ -1,7 +1,12 @@
+# Mac system files
 .DS_Store
-.idea/
-*.iml
-*.class
-out/
-.__pycache__/
-*.pyc
+
+# IntelliJ IDEA
+.idea/          # project metadata
+*.iml           # module files
+out/            # compiled output
+*.class         # compiled Java files
+
+# Python
+__pycache__/    # cache folders
+*.pyc           # compiled Python files
