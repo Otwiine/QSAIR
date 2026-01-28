@@ -3,4 +3,5 @@
 *.iml
 *.class
 out/
-
+.__pycache__/
+*.pyc
