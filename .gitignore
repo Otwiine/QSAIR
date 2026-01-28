@@ -2,12 +2,12 @@
 .DS_Store
 
 # IntelliJ IDEA
-.idea/          # ignore all IDE metadata and configs
-out/            # compiled Java output
-*.class         # compiled Java files
+.idea/                  # ignore all IDE metadata and configs
+out/                    # compiled Java output
+*.class                 # compiled Java files
+.idea/vcs.xml           # IntelliJ version control settings (local, machine-specific)
+.idea/workspace.xml     # IntelliJ workspace settings (open files, run configs, breakpoints)
 
 # Python
-__pycache__/    # cache folders
-*.pyc           # compiled Python files
-.idea/vcs.xml
-.idea/workspace.xml
+__pycache__/            # cache folders
+*.pyc                   # compiled Python files
